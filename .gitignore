@@ -1,0 +1,77 @@
+# User-provided cartridge ROMs (copyrighted; never commit).
+variants/*/roms/
+*.gba
+*.GBA
+
+# Save files
+saves/
+*.sav
+*.srm
+*.fla
+*.flash
+
+# Vendored decomp / reference projects (built in WSL; not committed).
+third_party/
+
+# Build output
+build/
+build-*/
+.bldtmp/
+*.obj
+*.pdb
+*.ilk
+*.exe
+*.dll
+*.tlog
+release-stage/
+
+# Sidecar caches written by the asset picker.
+bios.cfg
+rom.cfg
+
+# Generated code (derivative of copyrighted ROM; regenerate locally).
+# Per ../gbarecomp/CLAUDE.md "Generated C is never edited". The README
+# stays tracked so each variant's generated/ dir exists in fresh clones.
+variants/*/generated/*.c
+variants/*/generated/*.cpp
+variants/*/generated/*.h
+variants/*/generated/*.json
+
+# Large readelf/nm dumps from the byte-matching WSL decomp build — the
+# importer's INPUT (see ../_gen3_symbols/). The tracked symbols/*.toml +
+# *.tsv are its committed OUTPUT.
+variants/*/symbols/*_readelf.txt
+variants/*/symbols/*_sections.txt
+variants/*/symbols/*nm.txt
+
+# Diagnostic / triage artifacts + scratch.
+_triage/
+*.log
+*.bmp
+*.png
+*.rgb
+_*
+*.bak
+*.csv
+*.frag
+recomp_coverage.json
+
+# Local-only config overrides.
+*.local.toml
+*.local.ini
+debug.local.ini
+
+# IDE / editor / OS
+.vscode/
+.idea/
+.vs/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Claude auto-memory (per-user, never committed).
+memory/

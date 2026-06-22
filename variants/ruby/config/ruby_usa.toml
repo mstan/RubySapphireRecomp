@@ -1,0 +1,14 @@
+# ruby_usa.toml — region overrides for Pokémon Ruby USA rev1.
+#
+# Layered on top of ../game.toml (config/<short_name>_<region>.toml =
+# config/ruby_usa.toml). Cross-verified against pret/pokeruby's
+# ruby_rev1.sha1 build target.
+
+[rom]
+sha1  = "610b96a9c9a7d03d2bafb655e7560ccff1a6d894"   # ruby_rev1
+
+[save]
+type = "flash1m"    # 1 Mbit (128 KB) flash + RTC on the Ruby cart
+size = "0x20000"
+
+[quirks]

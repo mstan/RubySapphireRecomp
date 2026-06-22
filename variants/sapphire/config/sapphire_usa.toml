@@ -1,0 +1,14 @@
+# sapphire_usa.toml — region overrides for Pokémon Sapphire USA rev1.
+#
+# Layered on top of ../game.toml (config/<short_name>_<region>.toml =
+# config/sapphire_usa.toml). Cross-verified against pret/pokeruby's
+# sapphire_rev1.sha1 build target.
+
+[rom]
+sha1  = "4722efb8cd45772ca32555b98fd3b9719f8e60a9"   # sapphire_rev1
+
+[save]
+type = "flash1m"    # 1 Mbit (128 KB) flash + RTC on the Sapphire cart
+size = "0x20000"
+
+[quirks]
