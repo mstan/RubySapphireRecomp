@@ -8,7 +8,7 @@ One repo hosts **both** games as separate native targets sharing one source tree
 and one engine (the [Sonic3AndKnucklesRecomp](https://github.com/mstan/Sonic3AndKnucklesRecomp)
 multi-variant pattern — an `add_gba_variant()` CMake function emits one executable
 per game). Their Gen3 siblings live in
-[`FireRedRecomp`](https://github.com/mstan/FireRedRecomp) (FireRed + LeafGreen) and
+[`FireRedLeafGreenRecomp`](https://github.com/mstan/FireRedLeafGreenRecomp) (FireRed + LeafGreen) and
 [`EmeraldRecomp`](https://github.com/mstan/EmeraldRecomp).
 
 > ### Status — playable bring-up (v0.0.1), and self-improving
