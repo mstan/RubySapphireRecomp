@@ -1,62 +1,136 @@
-# RubySapphireRecomp
+# RubySapphireRecomp — Pokémon Ruby + Sapphire, Recompiled
 
-Static recompilation of *Pokémon Ruby* and *Pokémon Sapphire* (GBA),
-built on top of [`gbarecomp`](../gbarecomp).
+Static recompilation of **Pokémon Ruby** and **Pokémon Sapphire** (Game Boy
+Advance) to native PC, built on the
+[`gbarecomp`](https://github.com/mstan/gbarecomp) framework.
 
-One repo hosts **both** games as separate native targets that share one
-source tree and one engine — the
-[Sonic3AndKnucklesRecomp](../../segagenesisrecomp/Sonic3AndKnucklesRecomp)
-pattern (an `add_gba_variant()` CMake function emits one executable per
-game). Ruby and Sapphire are the same engine built from one decomp
-(`pret/pokeruby`, different `GAME_VERSION` target), so they belong
-together exactly as FireRed + LeafGreen do in `../FireRedRecomp`.
+One repo hosts **both** games as separate native targets sharing one source tree
+and one engine (the [Sonic3AndKnucklesRecomp](https://github.com/mstan/Sonic3AndKnucklesRecomp)
+multi-variant pattern — an `add_gba_variant()` CMake function emits one executable
+per game). Their Gen3 siblings live in
+[`FireRedRecomp`](https://github.com/mstan/FireRedRecomp) (FireRed + LeafGreen) and
+[`EmeraldRecomp`](https://github.com/mstan/EmeraldRecomp).
 
-These are **recomps**, not ports or decomps. Only symbol metadata from
-[`pret/pokeruby`](https://github.com/pret/pokeruby) enters the repo.
+> ### Status — playable bring-up (v0.0.1), and self-improving
+>
+> This is a **static-recompilation base + runner**, not a finished port. Both
+> games **boot through the BIOS intro to the title screen and into gameplay**.
+> It is **early** — not every code path is statically recompiled yet, and content
+> has not been exhaustively tested. (Ruby & Sapphire are the oldest Gen3 engine;
+> expect a few more early-boot and flash/RTC quirks than FireRed/Emerald.)
+>
+> **It gets better the more you play.** Any code path the static recompiler hasn't
+> covered runs through a built-in **interpreter the first time it's hit**, then is
+> **JIT-compiled to native** (in-process, no toolchain needed) and **remembered on
+> disk** — so the next launch runs it natively from the start. Interpreted once,
+> native ever after; coverage grows toward fully-native as the game is played. See
+> [How it self-improves](#how-it-self-improves).
 
-## Layout
+---
+
+## What "static recompilation" means here
+
+The ROM's **ARM7TDMI machine code is statically translated to native C** — every
+function the game runs becomes a real generated C function. Unlike most recomp
+projects, **the GBA BIOS is recompiled and executed too** (not HLE'd or stubbed),
+so the boot sequence and interrupt/SWI handlers run as real recompiled code. The
+rest of the console — the PPU (graphics), APU + M4A sound engine, DMA, timers, the
+cartridge flash save chip + RTC, and hardware I/O — is modeled by the `gbarecomp`
+runtime.
+
+Only **symbol metadata** (function names, addresses, sizes) from the
+[`pret/pokeruby`](https://github.com/pret/pokeruby) decompilation enters this repo
+— never its C source, build output, or toolchain. **The ROM is never
+redistributed**; you supply your own legally-dumped copy.
+
+## Variants
+
+| Target           | Game              | ROM (USA)   | SHA-1                                      | Debug port |
+|------------------|-------------------|-------------|-------------------------------------------|------------|
+| `RubyRecomp`     | Pokémon Ruby      | rev1        | `610b96a9c9a7d03d2bafb655e7560ccff1a6d894` | 19872      |
+| `SapphireRecomp` | Pokémon Sapphire  | rev1        | `4722efb8cd45772ca32555b98fd3b9719f8e60a9` | 19882      |
+
+The runtime **refuses to launch on an unrecognized ROM** — the SHA-1 must match.
+
+## Quick start
+
+1. Build from source (below) — prebuilt binaries are not yet published.
+2. Run the executable for the game you built.
+3. Supply your own **legally-obtained** Ruby / Sapphire (USA) ROM when prompted.
+   The path is cached next to the exe for future launches.
+4. Play. Early on you may briefly see the interpreter warm up new code paths; once
+   warmed (and cached), they run native.
+
+## Controls
+
+| GBA button | Keyboard      |
+|------------|---------------|
+| D-Pad      | Arrow keys    |
+| A          | Z             |
+| B          | X             |
+| Start      | Enter         |
+| Select     | Backspace     |
+
+Save states: **Shift+F1–F9** save to a slot, **F1–F9** load it.
+
+## How it self-improves
+
+`gbarecomp`'s coverage is honest: a path that wasn't statically recompiled is
+**bridged through the interpreter** the first time, *loudly*, then healed:
+
+- **First hit:** the interpreter runs the missed function (correct, just not
+  native) and the runtime records it.
+- **Heal:** the function is **JIT-compiled to native in-process** via a
+  toolchain-less backend (sljit) — no compiler required on your machine.
+- **Persist:** the healed path is written to a per-ROM cache
+  (`recomp_cache/<rom-sha1>/`), so **the next launch re-JITs it up front** and it
+  runs native from the start.
+
+The result is a game that converges toward fully-native execution the more it's
+played, and **stays** improved across launches. A handful of instruction patterns
+the JIT can't lower yet stay on the interpreter (precision over recall); those are
+emitter gaps that close over time. Self-improvement is on by default; set
+`GBARECOMP_SELFHEAL_RECOMPILE=0` for a pure-interpreter run.
+
+## Building from source
+
+**Prerequisites (Windows):** [MSYS2](https://www.msys2.org/) with the mingw64
+toolchain (`gcc`/`g++`), CMake 3.16+, Ninja, and SDL2 (mingw64 package). Builds
+are invoked from PowerShell with the mingw64 toolchain on `PATH`.
+
+**1. Clone this repo next to `gbarecomp`** (the game repo builds against the
+sibling engine checkout on `main`):
 
 ```
-RubySapphireRecomp/
-  CMakeLists.txt              two add_gba_variant() targets
-  src/main.cpp                variant-agnostic entry (builtins via compile-defs)
-  variants/ruby/             ┐ each: game.toml + config/ + symbols/
-  variants/sapphire/         ┘       + generated/ + roms/
-  tools/import_decomp_symbols/, tools/verify_rom_hash/
+git clone https://github.com/mstan/gbarecomp.git
+git clone https://github.com/mstan/RubySapphireRecomp.git
+cd RubySapphireRecomp
 ```
 
-| Target          | Game     | ROM rev | sha1       | Debug port |
-|-----------------|----------|---------|------------|------------|
-| `RubyRecomp`    | Ruby     | rev1    | `610b96a9…`| 19872      |
-| `SapphireRecomp`| Sapphire | rev1    | `4722efb8…`| 19882      |
+**2. Supply your ROM(s)** at `variants/ruby/roms/ruby_usa.gba` and/or
+`variants/sapphire/roms/sapphire_usa.gba` (SHA-1s above). ROMs are gitignored and
+never committed.
 
-Both on-disk USA dumps are **rev1**, so the variants target the
-`ruby_rev1` / `sapphire_rev1` decomp builds.
+**3. Recompile + build.** The committed `variants/*/symbols/*.toml` are the
+importer output, so you can regenerate the C and build directly:
 
-## Build & run
-
-Builds against the live `../gbarecomp` checkout on `main`.
-
-```sh
-# 1. (one-time) symbols from byte-matching pokeruby WSL builds
-#    (../_gen3_build_symbols.sh) → tools/import_decomp_symbols/.
-# 2. recompile each variant → variants/<v>/generated/:
-../gbarecomp/build/gba_recompile.exe \
-    --rom variants/ruby/roms/ruby_usa.gba \
-    --config variants/ruby/symbols/ruby_usa.toml \
-    --out variants/ruby/generated
-#    (repeat for sapphire)
-# 3. build (MSYS2 mingw64 + Ninja, from PowerShell):
-cmake -G Ninja -S . -B build
-cmake --build build --target RubyRecomp -j
-cmake --build build --target SapphireRecomp -j
-# 4. run (BIOS + ROM both hash-verify):
-./build/RubyRecomp.exe
-./build/SapphireRecomp.exe
+```
+# from PowerShell, mingw64 on PATH
+gba_recompile --rom variants/ruby/roms/ruby_usa.gba \
+              --config variants/ruby/symbols/ruby_usa.toml \
+              --out variants/ruby/generated
+cmake -S . -B build -G Ninja
+cmake --build build --target RubyRecomp
 ```
 
-## Status
+(`gba_recompile` is built from the `gbarecomp` checkout; see that repo's README.)
+The recompiled translation unit is large — expect a multi-minute compile.
 
-Scaffolded against gbarecomp `main` @ `a4e22d7`. Both ROMs hash-verified,
-symbols imported (11,455 functions each), recompiled. Bring-up follows the
-same milestone ladder as FireRed (see `CLAUDE.md`).
+## Legal
+
+This project contains **no copyrighted ROM data, no Nintendo BIOS, and no decomp
+source** — only original recompiler/runtime code and symbol metadata. **You must
+supply your own legally-dumped ROM** (and BIOS, where the runtime requires one).
+Pokémon, Ruby, and Sapphire are trademarks of Nintendo / Game Freak / The Pokémon
+Company; this project is an unaffiliated, non-commercial preservation and research
+effort.
