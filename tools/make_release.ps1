@@ -1,0 +1,121 @@
+<#
+make_release.ps1 - build the RubySapphireRecomp windows release zips.
+
+Modeled on the snesrecomp Zelda ALttP release script, adapted for the GBA
+MinGW / CMake / Ninja toolchain. This repo ships TWO games, so it produces one
+zip per game:
+
+  RubyRecomp-windows-x64-v<Version>.zip
+  SapphireRecomp-windows-x64-v<Version>.zip
+
+Ships ONLY zips (never a bare exe; the MinGW exe needs the bundled runtime
+DLLs). Each zip contains: <Target>.exe (Release, MinGW, stripped) + the four
+runtime DLLs (SDL2.dll, libgcc_s_seh-1.dll, libstdc++-6.dll, libwinpthread-1.dll)
++ README.md.
+
+You supply your own legally-obtained ROM and a GBA BIOS dump (gba_bios.bin) on
+first run - the runtime's native picker caches the chosen paths to rom.cfg /
+bios.cfg next to the exe. Neither the ROM nor the BIOS is ever redistributed.
+
+Zips land in release-stage\. Publish via gh AFTER the user signs off:
+
+  gh release create v<Version> `
+      release-stage\RubyRecomp-windows-x64-v<Version>.zip `
+      release-stage\SapphireRecomp-windows-x64-v<Version>.zip
+
+Usage: powershell -File tools\make_release.ps1 -Version 0.0.2
+#>
+param(
+  [Parameter(Mandatory = $true)][string]$Version,
+  [string]$BuildDir = 'build-release'
+)
+$ErrorActionPreference = 'Stop'
+
+$MingwBin = 'C:\msys64\mingw64\bin'
+$env:PATH = "$MingwBin;$env:PATH"
+$root  = Split-Path -Parent $PSScriptRoot
+$build = Join-Path $root $BuildDir
+$out   = Join-Path $root 'release-stage'
+New-Item -ItemType Directory -Force $out | Out-Null
+
+# Games this repo ships: CMake target -> README title + decomp variant (for the
+# ROM SHA-1 surfaced in the README).
+$games = @(
+  @{ Target = 'RubyRecomp';     Title = 'Pokemon Ruby';     Variant = 'ruby'     },
+  @{ Target = 'SapphireRecomp'; Title = 'Pokemon Sapphire'; Variant = 'sapphire' }
+)
+$dlls = @('SDL2.dll', 'libgcc_s_seh-1.dll', 'libstdc++-6.dll', 'libwinpthread-1.dll')
+
+# Configure once (Release; dynamic + bundled DLLs). GBARECOMP_ROOT defaults to
+# ../gbarecomp (the engine checkout) via this repo's CMakeLists. SDL2 is located
+# through the msys2 mingw64 prefix - passed explicitly so a fresh checkout
+# configures without relying on auto-detection.
+if (-not (Test-Path (Join-Path $build 'CMakeCache.txt'))) {
+  & cmake -S $root -B $build -G Ninja `
+      -DCMAKE_C_COMPILER="$MingwBin/cc.exe" `
+      -DCMAKE_CXX_COMPILER="$MingwBin/c++.exe" `
+      -DCMAKE_MAKE_PROGRAM="$MingwBin/ninja.exe" `
+      -DCMAKE_BUILD_TYPE=Release "-DCMAKE_CXX_FLAGS_RELEASE=-O1 -DNDEBUG" `
+      -DGBARECOMP_BUILD_ORACLE=OFF `
+      -DGBARECOMP_MINGW_PREFIX_UNIX="/c/msys64/mingw64" `
+      -DSDL2_INCLUDE_DIR="C:/msys64/mingw64/include/SDL2" `
+      -DSDL2_LIBRARY="C:/msys64/mingw64/lib/libSDL2.dll.a"
+  if ($LASTEXITCODE -ne 0) { throw "configure failed ($LASTEXITCODE)" }
+}
+
+foreach ($g in $games) {
+  $target = $g.Target
+  & cmake --build $build --target $target
+  if ($LASTEXITCODE -ne 0) { throw "build failed for $target ($LASTEXITCODE)" }
+
+  $exe = Join-Path $build "$target.exe"
+  if (-not (Test-Path $exe)) { throw "expected exe missing: $exe" }
+  & "$MingwBin\strip.exe" $exe
+
+  $stageName = "$target-windows-x64-v$Version"
+  $stage = Join-Path $out $stageName
+  if (Test-Path $stage) { Remove-Item -Recurse -Force $stage }
+  New-Item -ItemType Directory -Force $stage | Out-Null
+
+  Copy-Item $exe $stage
+  foreach ($d in $dlls) { Copy-Item (Join-Path $MingwBin $d) $stage }
+
+  # ROM SHA-1 from the variant's game.toml (best-effort; for the README only).
+  $sha = ''
+  $toml = Join-Path $root "variants\$($g.Variant)\game.toml"
+  if (Test-Path $toml) {
+    $m = Select-String -Path $toml -Pattern '^\s*sha1\s*=\s*"([0-9a-fA-F]+)"' | Select-Object -First 1
+    if ($m) { $sha = $m.Matches[0].Groups[1].Value }
+  }
+
+  @"
+# $($g.Title) - GBA static recompilation (Windows x64)
+
+Release build: an optimized native port. Running ``$target.exe`` opens a picker
+for your ROM (and, on first run, your GBA BIOS), then the game window.
+
+Static recompilation turns the game's ARM7TDMI code into native C++ (via the
+[gbarecomp](https://github.com/mstan/gbarecomp) framework); the rest of the GBA
+(PPU, APU, DMA, timers, BIOS HLE) runs through the framework's runner core.
+
+## How to run
+
+1. Extract this folder (keep the four DLLs next to ``$target.exe``).
+2. Run ``$target.exe``. On first launch it prompts for:
+   - your legally-obtained **$($g.Title) (USA)** ROM (``.gba``)$(if ($sha) { " - expected SHA-1 ``$sha``" })
+   - a **GBA BIOS** dump (``gba_bios.bin``).
+   The picked paths are cached to ``rom.cfg`` / ``bios.cfg`` next to the exe;
+   save data lands next to the exe.
+
+The ROM and BIOS are **never** redistributed - supply your own dumps.
+
+See the GitHub release notes for what changed in v$Version.
+"@ | Out-File (Join-Path $stage 'README.md') -Encoding utf8
+
+  $zip = Join-Path $out "$stageName.zip"
+  if (Test-Path $zip) { Remove-Item -Force $zip }
+  Compress-Archive -Path "$stage\*" -DestinationPath $zip
+  Write-Host "--- $stageName ---"
+  Get-ChildItem $stage | Select-Object Name, Length | Out-Host
+  Get-Item $zip | Select-Object Name, Length | Out-Host
+}
