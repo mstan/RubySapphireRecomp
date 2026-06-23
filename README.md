@@ -54,7 +54,8 @@ The runtime **refuses to launch on an unrecognized ROM** — the SHA-1 must matc
 
 ## Quick start
 
-1. Build from source (below) — prebuilt binaries are not yet published.
+1. Download the latest `RubyRecomp-` / `SapphireRecomp-windows-x64` zip from
+   [Releases](../../releases) and extract it (or build from source — see below).
 2. Run the executable for the game you built.
 3. Supply your own **legally-obtained** Ruby / Sapphire (USA) ROM when prompted.
    The path is cached next to the exe for future launches.
