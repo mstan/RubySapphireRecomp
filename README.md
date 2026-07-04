@@ -135,3 +135,13 @@ supply your own legally-dumped ROM** (and BIOS, where the runtime requires one).
 Pokémon, Ruby, and Sapphire are trademarks of Nintendo / Game Freak / The Pokémon
 Company; this project is an unaffiliated, non-commercial preservation and research
 effort.
+
+---
+
+<p align="center">
+  <sub><b>R.A.I.D. — Retro AI Development</b> · a Discord for AI-assisted retro reverse-engineering, decomp &amp; recomp</sub>
+</p>
+
+<p align="center">
+  <a href="https://discord.gg/Ad9BwSzctP"><img src=".github/raid-discord.png" alt="Join the Retro AI Development (R.A.I.D.) Discord" width="200"></a>
+</p>
