@@ -354,7 +354,8 @@ def main() -> int:
         fh.write(f'id = "{args.id}"\n')
         fh.write("load_address = 0x08000000\n")
         fh.write(f"size = 0x{(rom_size or 0):08X}\n")
-        fh.write("entry_pc = 0x08000000\n\n")
+        fh.write("entry_pc = 0x08000000\n")
+        fh.write("codegen_shards = 64\n\n")
         fh.write("[identity]\n")
         fh.write(f'sha1 = "{rom_sha1 or ""}"\n\n')
         # Runtime IWRAM code copies (auto-derived from decomp symbols; static

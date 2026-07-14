@@ -7,6 +7,9 @@ id = "sapphire_usa"
 load_address = 0x08000000
 size = 0x01000000
 entry_pc = 0x08000000
+# Deterministic address-based shards keep this large generated corpus
+# practical to rebuild without changing guest control-flow semantics.
+codegen_shards = 64
 
 [identity]
 sha1 = "4722efb8cd45772ca32555b98fd3b9719f8e60a9"
@@ -57331,4 +57334,3 @@ name = "memset"
 addr = 0x081E2758
 mode = "thumb"
 name = "strcmp"
-
