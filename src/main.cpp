@@ -18,6 +18,8 @@
 
 #include <cstdio>
 #include <cstring>
+#include <string>
+#include <vector>
 
 #include "runtime.h"
 
@@ -29,6 +31,19 @@
 #endif
 #ifndef GBARECOMP_WINDOW_TITLE
 #define GBARECOMP_WINDOW_TITLE "gbarecomp"
+#endif
+#ifndef GBARECOMP_BUILTIN_CRC32
+#define GBARECOMP_BUILTIN_CRC32 0
+#endif
+#ifndef GBARECOMP_BUILTIN_REGION
+#define GBARECOMP_BUILTIN_REGION ""
+#endif
+#ifndef GBARECOMP_BOXART
+#define GBARECOMP_BOXART ""
+#endif
+
+#if defined(GBAGAME_RECOMP_UI)
+#include "game_launcher_boot.h"
 #endif
 
 namespace {
@@ -65,8 +80,25 @@ int main(int argc, char** argv) {
     opts.builtin_rom_sha1  = (sizeof(GBARECOMP_BUILTIN_SHA1) > 1)
                                  ? GBARECOMP_BUILTIN_SHA1
                                  : nullptr;
-    // CRC32 is informational only; leave it 0 so the SHA-only picker
-    // doesn't warn on a value we'd otherwise keep in lockstep.
-    opts.builtin_rom_crc32 = 0;
+    // CRC32 of the pinned ROM (same dump the SHA-1 gates on); the
+    // launcher's GAME card uses it for its "ROM verified" check.
+    opts.builtin_rom_crc32 = GBARECOMP_BUILTIN_CRC32;
+    opts.launcher_region   = (sizeof(GBARECOMP_BUILTIN_REGION) > 1)
+                                 ? GBARECOMP_BUILTIN_REGION
+                                 : nullptr;
+    opts.launcher_boxart = (sizeof(GBARECOMP_BOXART) > 1)
+                               ? GBARECOMP_BOXART
+                               : nullptr;
+    opts.launcher_game_config = GBARECOMP_DEFAULT_GAME_CONFIG;  // prefill ROM/BIOS
+
+#if defined(GBAGAME_RECOMP_UI)
+    std::vector<std::string> args(argv, argv + argc);
+    if (game_launcher_preboot(args, opts)) return 0;   // user quit the launcher
+    std::vector<char*> av;
+    av.reserve(args.size());
+    for (auto& s : args) av.push_back(s.data());
+    return gbarecomp::run_game(static_cast<int>(av.size()), av.data(), opts);
+#else
     return gbarecomp::run_game(argc, argv, opts);
+#endif
 }

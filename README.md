@@ -28,6 +28,16 @@ per game). Their Gen3 siblings live in
 
 ---
 
+## Screenshots
+
+| Pokémon Ruby | Pokémon Sapphire |
+|---|---|
+| ![Pokémon Ruby — title screen, native recompiled build](docs/screenshots/ruby.png) | ![Pokémon Sapphire — title screen, native recompiled build](docs/screenshots/sapphire.png) |
+
+*Native recompiled builds (no emulator), captured running the original ROMs.*
+
+---
+
 ## What "static recompilation" means here
 
 The ROM's **ARM7TDMI machine code is statically translated to native C** — every

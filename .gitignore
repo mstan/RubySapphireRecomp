@@ -75,3 +75,7 @@ __pycache__/
 
 # Claude auto-memory (per-user, never committed).
 memory/
+
+# README showcase screenshots (override the *.png ignore above)
+!docs/screenshots/
+!docs/screenshots/*.png
