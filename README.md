@@ -1,5 +1,13 @@
 # RubySapphireRecomp — Pokémon Ruby + Sapphire, Recompiled
 
+> _This recompilation is a **byproduct of developing
+> [gbarecomp](https://github.com/mstan/gbarecomp)** — the games are the proving ground, the framework is the
+> goal, and depth will keep landing over months, not days. My time for any one
+> title is limited, so I ask for your patience. Contributions are welcome —
+> testing, issues, and PRs to the game or framework all help and will
+> accelerate this game's polish. More on the why at:
+> [Recomp + AI: 5 Months Later »](https://1379.tech/recomp-ai-5-months-later/)_
+
 Static recompilation of **Pokémon Ruby** and **Pokémon Sapphire** (Game Boy
 Advance) to native PC, built on the
 [`gbarecomp`](https://github.com/mstan/gbarecomp) framework.
