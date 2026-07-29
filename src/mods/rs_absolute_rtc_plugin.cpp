@@ -8,7 +8,7 @@ namespace {
 constexpr std::uint32_t kRtcCalcLocalTime = 0x080095B8u;
 constexpr std::uint32_t kInitClockWithRtc = 0x0810B000u;
 
-constexpr std::uint32_t kLocalTimeOffset = 0x03004038u;
+constexpr std::uint32_t kLocalTimeOffset = 0x02024F3Cu;
 constexpr std::uint32_t kTimeSize = 5u;
 
 bool absolute_rtc_enabled = false;
