@@ -1,0 +1,28 @@
+format_version = 1
+id = "pokemon-rs.enhancement.absolute-rtc"
+version = "1.0.0"
+name = "Pokemon Ruby/Sapphire Absolute RTC"
+author = "mstan"
+description = "Makes Ruby and Sapphire's displayed clock follow the boot-seeded cartridge RTC instead of the saved bedroom-clock offset."
+license = "MIT"
+resolver = "declarative"
+save_compatibility = "shared"
+
+[[target]]
+game_id = "pokemon-ruby-us"
+rom_sha1 = "610b96a9c9a7d03d2bafb655e7560ccff1a6d894"
+
+[[target]]
+game_id = "pokemon-sapphire-us"
+rom_sha1 = "4722efb8cd45772ca32555b98fd3b9719f8e60a9"
+
+[[feature]]
+id = "absolute-rtc"
+name = "Absolute RTC"
+description = "Use the host-seeded cartridge RTC directly for the in-game clock."
+group = "Clock"
+default_enabled = false
+
+[[plugin]]
+feature = "absolute-rtc"
+id = "pokemon-rs.absolute-rtc"

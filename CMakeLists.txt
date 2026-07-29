@@ -20,6 +20,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(GBARECOMP_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/gbarecomp"
     CACHE PATH "Path to the gbarecomp platform-core checkout")
+set(RECOMP_UI_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/recomp-ui"
+    CACHE PATH "Path to the shared recomp-ui checkout")
+set(GBARECOMP_RUNTIME_UI_ROOT "${RECOMP_UI_ROOT}"
+    CACHE PATH "recomp-ui root used by the live GBA runtime adapter")
+set(GBARECOMP_ENABLE_MODS ON CACHE BOOL
+    "Build Ruby/Sapphire's built-in mod catalog and trusted-plugin runtime" FORCE)
 
 if(NOT EXISTS "${GBARECOMP_ROOT}/CMakeLists.txt")
     message(FATAL_ERROR
@@ -46,7 +52,14 @@ function(add_gba_variant TARGET NAME PORT WIN_TITLE GAME_NAME ROM_SHA1 ROM_CRC32
         "${VARIANT_DIR}/generated/*.c"
         "${VARIANT_DIR}/generated/*.cpp")
 
-    add_executable(${TARGET} src/main.cpp ${VARIANT_GENERATED})
+    set(VARIANT_GAME_SOURCES src/main.cpp)
+    if(GBARECOMP_ENABLE_MODS)
+        list(APPEND VARIANT_GAME_SOURCES
+            src/mods/rs_absolute_rtc_plugin.cpp)
+    endif()
+    add_executable(${TARGET}
+        ${VARIANT_GAME_SOURCES}
+        ${VARIANT_GENERATED})
 
     # Keep generated guest translation units at a bounded optimization and
     # debug-info cost for deterministic recompiled_NNN.cpp shards.
@@ -80,7 +93,12 @@ function(add_gba_variant TARGET NAME PORT WIN_TITLE GAME_NAME ROM_SHA1 ROM_CRC32
         GBARECOMP_BUILTIN_NAME="${GAME_NAME}"
         GBARECOMP_BUILTIN_SHA1="${ROM_SHA1}"
         GBARECOMP_BUILTIN_CRC32=${ROM_CRC32}
-        GBARECOMP_BUILTIN_REGION="USA")
+        GBARECOMP_BUILTIN_REGION="USA"
+        GBARECOMP_MOD_GAME_ID="pokemon-${NAME}-us"
+        GBARECOMP_LAUNCHER_CONFIG_FILENAME="config_${NAME}.ini"
+        GBARECOMP_LAUNCHER_KEYBINDS_FILENAME="keybinds_${NAME}.ini"
+        GBARECOMP_LAUNCHER_ROM_CACHE_FILENAME="rom_${NAME}.cfg"
+        GBARECOMP_LAUNCHER_BIOS_CACHE_FILENAME="bios_${NAME}.cfg")
 
     if(GBAGAME_RECOMP_UI)
         target_link_libraries(${TARGET} PRIVATE game_launcher_ui)
@@ -117,14 +135,18 @@ endfunction()
 # ─────────────────────────────────────────────────────────────────────
 option(GBAGAME_RECOMP_UI "Build the recomp-ui pre-boot launcher" ON)
 if(GBAGAME_RECOMP_UI)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/recomp-ui/recomp_ui.cmake)
+    include(${RECOMP_UI_ROOT}/recomp_ui.cmake)
     add_library(game_launcher_ui STATIC src/game_launcher_boot.cpp)
     target_include_directories(game_launcher_ui PRIVATE
         "${GBARECOMP_ROOT}/src/runtime"   # launcher_seam.h + runtime.h
         "${GBARECOMP_ROOT}/src/gba"
         src
     )
-    recomp_target_launcher_ui(game_launcher_ui)   # sources, includes, RECOMP_LAUNCHER, asset staging
+    if(GBARECOMP_ENABLE_MODS)
+        target_compile_definitions(game_launcher_ui PRIVATE
+            GBARECOMP_ENABLE_MODS=1)
+    endif()
+    recomp_target_launcher_ui(game_launcher_ui CONSOLE gba)
     find_package(SDL2 REQUIRED)
     target_link_libraries(game_launcher_ui PUBLIC SDL2::SDL2)
     if(WIN32)
@@ -140,3 +162,15 @@ add_gba_variant(RubyRecomp     ruby     19872 "RubyRecomp"
 # Sapphire — rev1, sha1 4722efb8…
 add_gba_variant(SapphireRecomp sapphire 19882 "SapphireRecomp"
     "Pokemon Sapphire (USA)" "4722efb8cd45772ca32555b98fd3b9719f8e60a9" 0xBAFEDAE5)
+
+# Ship the game-owned, disabled-by-default mod catalog beside both executables.
+set(RS_PRELOADED_MODS "${CMAKE_CURRENT_SOURCE_DIR}/mods/preloaded")
+if(EXISTS "${RS_PRELOADED_MODS}/packages")
+    foreach(RS_TARGET RubyRecomp SapphireRecomp)
+        add_custom_command(TARGET ${RS_TARGET} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${RS_PRELOADED_MODS}"
+                "$<TARGET_FILE_DIR:${RS_TARGET}>/mods"
+            COMMENT "Preloading the Ruby/Sapphire mod catalog")
+    endforeach()
+endif()

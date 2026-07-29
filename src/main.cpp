@@ -41,6 +41,21 @@
 #ifndef GBARECOMP_BOXART
 #define GBARECOMP_BOXART ""
 #endif
+#ifndef GBARECOMP_MOD_GAME_ID
+#define GBARECOMP_MOD_GAME_ID ""
+#endif
+#ifndef GBARECOMP_LAUNCHER_CONFIG_FILENAME
+#define GBARECOMP_LAUNCHER_CONFIG_FILENAME ""
+#endif
+#ifndef GBARECOMP_LAUNCHER_KEYBINDS_FILENAME
+#define GBARECOMP_LAUNCHER_KEYBINDS_FILENAME ""
+#endif
+#ifndef GBARECOMP_LAUNCHER_ROM_CACHE_FILENAME
+#define GBARECOMP_LAUNCHER_ROM_CACHE_FILENAME ""
+#endif
+#ifndef GBARECOMP_LAUNCHER_BIOS_CACHE_FILENAME
+#define GBARECOMP_LAUNCHER_BIOS_CACHE_FILENAME ""
+#endif
 
 #if defined(GBAGAME_RECOMP_UI)
 #include "game_launcher_boot.h"
@@ -83,6 +98,9 @@ int main(int argc, char** argv) {
     // CRC32 of the pinned ROM (same dump the SHA-1 gates on); the
     // launcher's GAME card uses it for its "ROM verified" check.
     opts.builtin_rom_crc32 = GBARECOMP_BUILTIN_CRC32;
+    opts.mod_game_id       = (sizeof(GBARECOMP_MOD_GAME_ID) > 1)
+                                 ? GBARECOMP_MOD_GAME_ID
+                                 : nullptr;
     opts.launcher_region   = (sizeof(GBARECOMP_BUILTIN_REGION) > 1)
                                  ? GBARECOMP_BUILTIN_REGION
                                  : nullptr;
@@ -90,6 +108,18 @@ int main(int argc, char** argv) {
                                ? GBARECOMP_BOXART
                                : nullptr;
     opts.launcher_game_config = GBARECOMP_DEFAULT_GAME_CONFIG;  // prefill ROM/BIOS
+    opts.launcher_config_filename = (sizeof(GBARECOMP_LAUNCHER_CONFIG_FILENAME) > 1)
+                                        ? GBARECOMP_LAUNCHER_CONFIG_FILENAME
+                                        : nullptr;
+    opts.launcher_keybinds_filename = (sizeof(GBARECOMP_LAUNCHER_KEYBINDS_FILENAME) > 1)
+                                          ? GBARECOMP_LAUNCHER_KEYBINDS_FILENAME
+                                          : nullptr;
+    opts.launcher_rom_cache_filename = (sizeof(GBARECOMP_LAUNCHER_ROM_CACHE_FILENAME) > 1)
+                                           ? GBARECOMP_LAUNCHER_ROM_CACHE_FILENAME
+                                           : nullptr;
+    opts.launcher_bios_cache_filename = (sizeof(GBARECOMP_LAUNCHER_BIOS_CACHE_FILENAME) > 1)
+                                            ? GBARECOMP_LAUNCHER_BIOS_CACHE_FILENAME
+                                            : nullptr;
 
 #if defined(GBAGAME_RECOMP_UI)
     std::vector<std::string> args(argv, argv + argc);
