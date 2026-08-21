@@ -17,6 +17,26 @@ sha1 = "300c20df6731a33952ded8c436f7f186d25d3492"
 [rom]
 path = "roms/ruby_usa.gba"   # user-provided; gitignored (rev1, 610b96a9…)
 
+# ── Recompiler program identity (consumed by gba_recompile) ─────────
+#
+# This file is the BASE config for the recompile: it owns [program] and
+# [identity] and wins every conflict with the generated overlay layered on
+# top of it (symbols/AXVE_symbols.toml).
+#
+# Before 2026-08-21 the recompile was driven by the importer's generated
+# symbols/ruby_usa.toml INSTEAD of this file, because only that file had a
+# [program] table — so every import replaced the hand-authored config and no
+# reviewed entry could survive one. These values are carried over verbatim.
+[program]
+name         = "Pokemon Ruby Version (USA)"
+id           = "ruby_usa"
+load_address = 0x08000000
+size         = 0x01000000
+entry_pc     = 0x08000000
+
+[identity]
+sha1 = "610b96a9c9a7d03d2bafb655e7560ccff1a6d894"
+
 [recompiler]
 entry_point   = "0x08000000"
 seeds         = "symbols/imported_symbols.tsv"

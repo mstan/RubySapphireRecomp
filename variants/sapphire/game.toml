@@ -17,6 +17,30 @@ sha1 = "300c20df6731a33952ded8c436f7f186d25d3492"
 [rom]
 path = "roms/sapphire_usa.gba"   # user-provided; gitignored (rev1, 4722efb8…)
 
+# ── Recompiler program identity (consumed by gba_recompile) ─────────
+#
+# This file is the BASE config for the recompile: it owns [program] and
+# [identity] and wins every conflict with the generated overlay layered on
+# top of it (symbols/AXPE_symbols.toml).
+#
+# Before 2026-08-21 the recompile was driven by the importer's generated
+# symbols/sapphire_usa.toml INSTEAD of this file, because only that file had
+# a [program] table — so every import replaced the hand-authored config and
+# no reviewed entry could survive one. These values are carried over
+# verbatim.
+[program]
+name         = "Pokemon Sapphire Version (USA)"
+id           = "sapphire_usa"
+load_address = 0x08000000
+size         = 0x01000000
+entry_pc     = 0x08000000
+# Deterministic address-based shards keep this large generated corpus
+# practical to rebuild without changing guest control-flow semantics.
+codegen_shards = 64
+
+[identity]
+sha1 = "4722efb8cd45772ca32555b98fd3b9719f8e60a9"
+
 [recompiler]
 entry_point   = "0x08000000"
 seeds         = "symbols/imported_symbols.tsv"
