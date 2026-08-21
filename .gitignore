@@ -11,7 +11,17 @@ saves/
 *.flash
 
 # Vendored decomp / reference projects (built in WSL; not committed).
-third_party/
+# pret/pokeruby is a tracked SUBMODULE at third_party/pokeruby — it pins the
+# exact upstream revision whose build reproduces this project's ROM, which
+# is what makes its symbol addresses meaningful here. It is provenance
+# only: no decomp source enters the build (tools/decomp/import-symbols.sh
+# reads names, addresses and sizes out of a WSL-side build). Note the glob:
+# a bare `third_party/` excludes the DIRECTORY, and git cannot re-include a
+# path underneath an excluded directory, so the !third_party/pokeruby negation
+# would never take effect. Everything else here stays ignored (agbcc
+# installs, build sandboxes, large dumps).
+third_party/*
+!third_party/pokeruby
 
 # Build output
 build/
@@ -79,3 +89,12 @@ memory/
 # README showcase screenshots (override the *.png ignore above)
 !docs/screenshots/
 !docs/screenshots/*.png
+
+# Decomp symbol-import INPUTS: the bulky readelf dumps tools/decomp/import-symbols.sh
+# captures from the pinned decomp build. Regenerable and large; the small
+# reviewable OUTPUTS (symbols/*.tsv, symbols/<ID>_symbols.toml) and the
+# <decomp>_revision.txt provenance stamp stay tracked.
+symbols/*_syms.txt
+symbols/*_sections.txt
+variants/*/symbols/*_syms.txt
+variants/*/symbols/*_sections.txt
