@@ -89,6 +89,16 @@ foreach ($g in $games) {
   }
   Copy-Item $assets -Destination $stage -Recurse
 
+
+  # Game-owned mod catalog, staged next to the exe by the CMake POST_BUILD
+  # copy. The launcher seam resolves the catalog at <exe>/mods, so without
+  # this the shipped archive has an empty Mods page even though a local build
+  # works. Data only -- no ROM-derived content.
+  $mods = Join-Path $build 'mods'
+  if (-not (Test-Path (Join-Path $mods 'packages'))) {
+    throw "Mod catalog missing: $mods (build with GBARECOMP_ENABLE_MODS=ON)"
+  }
+  Copy-Item $mods -Destination $stage -Recurse
   # Bundle the self-contained tcc overlay toolchain (TinyCC + overlay shim
   # headers) next to the exe so a toolchain-less player box self-heals overlay
   # gaps via tcc (overlay backend auto -> tcc). See gbarecomp/tools/fetch_tcc.ps1.
@@ -129,7 +139,64 @@ See the GitHub release notes for what changed in v$Version.
 
   $zip = Join-Path $out "$stageName.zip"
   if (Test-Path $zip) { Remove-Item -Force $zip }
-  Compress-Archive -Path "$stage\*" -DestinationPath $zip
+  Add-Type -AssemblyName System.IO.Compression
+  Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+  # ZIP entry names must always use '/', regardless of the host OS.
+  # Compress-Archive preserves Windows backslashes, which POSIX extractors
+  # treat as literal filename characters rather than directory separators -- so
+  # a Linux / Steam Deck / Proton user gets files literally named
+  # "assets\fonts\LatoLatin-Regular.ttf" (and "mods\packages\..." where the
+  # game ships a mod catalog), the nested trees are never created, and the
+  # ImGui launcher finds neither its fonts nor its mods. Write portably here,
+  # then verify before anyone can publish it.
+  # (Convention ported from snesrecomp/SuperMarioWorldRecomp.)
+  $rzStageFull = [IO.Path]::GetFullPath((Resolve-Path -LiteralPath $stage).Path)
+  $rzZipFull = [IO.Path]::GetFullPath($zip)
+  $rzPrefix = $rzStageFull.TrimEnd('\') + '\'
+  $rzFiles = @(Get-ChildItem -LiteralPath $stage -File -Recurse |
+      Sort-Object FullName)
+  $rzArchive = [IO.Compression.ZipFile]::Open(
+      $rzZipFull, [IO.Compression.ZipArchiveMode]::Create)
+  try {
+      foreach ($rzFile in $rzFiles) {
+          $rzFull = [IO.Path]::GetFullPath($rzFile.FullName)
+          if (-not $rzFull.StartsWith(
+                  $rzPrefix, [StringComparison]::OrdinalIgnoreCase)) {
+              throw "Refusing to archive a file outside the release stage: $rzFull"
+          }
+          $rzName = $rzFull.Substring($rzPrefix.Length).Replace('\', '/')
+          if ($rzName.StartsWith('/') -or $rzName -match '(^|/)..(/|$)') {
+              throw "Unsafe ZIP entry name: $rzName"
+          }
+          [IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+              $rzArchive, $rzFull, $rzName,
+              [IO.Compression.CompressionLevel]::Optimal) | Out-Null
+      }
+  } finally {
+      $rzArchive.Dispose()
+  }
+
+  # Read the archive back and reject non-portable entry names outright, so a
+  # regression in the writer cannot ship a Windows-only zip again.
+  $rzArchive = [IO.Compression.ZipFile]::OpenRead($rzZipFull)
+  try {
+      $rzBad = @($rzArchive.Entries | Where-Object {
+          $_.FullName.Contains('\') -or
+          $_.FullName.StartsWith('/') -or
+          $_.FullName -match '(^|/)..(/|$)'
+      })
+      if ($rzBad.Count -ne 0) {
+          throw "ZIP contains non-portable entry names: $(
+              ($rzBad | ForEach-Object FullName) -join ', ')"
+      }
+      if ($rzArchive.Entries.Count -ne $rzFiles.Count) {
+          throw "ZIP entry count mismatch: expected $($rzFiles.Count), got $(
+              $rzArchive.Entries.Count)"
+      }
+  } finally {
+      $rzArchive.Dispose()
+  }
   Write-Host "--- $stageName ---"
   Get-ChildItem $stage | Select-Object Name, Length | Out-Host
   Get-Item $zip | Select-Object Name, Length | Out-Host
