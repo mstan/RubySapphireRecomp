@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "runtime.h"
+#include "field_view.h"
 
 #ifndef GBARECOMP_BUILTIN_NAME
 #define GBARECOMP_BUILTIN_NAME "GBA cartridge"
@@ -98,6 +99,7 @@ int main(int argc, char** argv) {
     // CRC32 of the pinned ROM (same dump the SHA-1 gates on); the
     // launcher's GAME card uses it for its "ROM verified" check.
     opts.builtin_rom_crc32 = GBARECOMP_BUILTIN_CRC32;
+    gen3::configure_view(opts, gen3::game_profile());
     opts.mod_game_id       = (sizeof(GBARECOMP_MOD_GAME_ID) > 1)
                                  ? GBARECOMP_MOD_GAME_ID
                                  : nullptr;

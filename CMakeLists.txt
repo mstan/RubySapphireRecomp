@@ -37,6 +37,8 @@ endif()
 
 add_subdirectory("${GBARECOMP_ROOT}" gbarecomp_build EXCLUDE_FROM_ALL)
 
+include("${GBARECOMP_ROOT}/cmake/GbaGen3View.cmake")
+
 add_executable(verify_rom_hash tools/verify_rom_hash/main.cpp)
 
 # add_gba_variant(<target> <name> <port> <win_title> <game_name> <sha1>
@@ -60,6 +62,10 @@ function(add_gba_variant TARGET NAME PORT WIN_TITLE GAME_NAME ROM_SHA1 ROM_CRC32
     add_executable(${TARGET}
         ${VARIANT_GAME_SOURCES}
         ${VARIANT_GENERATED})
+
+    gbarecomp_target_gen3_view(${TARGET} ${NAME})
+    string(TOUPPER "${NAME}" GEN3_VARIANT_NAME)
+    target_compile_definitions(${TARGET} PRIVATE GEN3_VARIANT_${GEN3_VARIANT_NAME}=1)
 
     # Keep generated guest translation units at a bounded optimization and
     # debug-info cost for deterministic recompiled_NNN.cpp shards.

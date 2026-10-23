@@ -1,0 +1,49 @@
+format_version = 1
+id = "pokemon-gen3.enhancement.widescreen"
+version = "1.0.0"
+name = "Gen III Adaptive Overworld"
+author = "mstan"
+description = "Reveal more overworld scenery and NPCs at the original pixel scale. Unloaded NPCs use idle poses; distant AI and special effects are not expanded."
+license = "PolyForm-Noncommercial-1.0.0"
+resolver = "declarative"
+save_compatibility = "shared"
+
+[[target]]
+game_id = "pokemon-ruby-us"
+rom_sha1 = "610b96a9c9a7d03d2bafb655e7560ccff1a6d894"
+
+[[target]]
+game_id = "pokemon-sapphire-us"
+rom_sha1 = "4722efb8cd45772ca32555b98fd3b9719f8e60a9"
+
+[[feature]]
+id = "widescreen"
+name = "Adaptive Overworld"
+description = "Expand the overworld in landscape or portrait, with anchored menus and continuous door animations. Battles and unsupported screens stay centered."
+group = "Presentation"
+default_enabled = false
+
+[[option]]
+feature = "widescreen"
+id = "aspect"
+label = "Aspect ratio"
+description = "Fit follows landscape or portrait windows. Fixed modes keep their chosen aspect ratio."
+type = "choice"
+default = "fit"
+
+[[option.choice]]
+value = "fit"
+label = "Fit to screen"
+[[option.choice]]
+value = "16:9"
+label = "16:9"
+[[option.choice]]
+value = "21:9"
+label = "21:9"
+[[option.choice]]
+value = "32:9"
+label = "32:9"
+
+[[plugin]]
+feature = "widescreen"
+id = "pokemon-gen3.widescreen.v1"
