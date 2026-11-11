@@ -113,6 +113,7 @@ foreach ($g in $games) {
   New-Item -ItemType Directory -Force $stage | Out-Null
 
   Copy-Item -LiteralPath $exe -Destination $stage
+  Copy-Item -LiteralPath (Join-Path $engine 'tools/CaptureDiagnostics.cmd') -Destination $stage
   & "$MingwBin\strip.exe" (Join-Path $stage "$target.exe")
   if ($LASTEXITCODE -ne 0) { throw "strip failed for $target" }
   Copy-Item -LiteralPath (Join-Path $root 'LICENSE') -Destination $stage
@@ -178,7 +179,11 @@ Existing saved aspect and feature choices are preserved. Use **Mods** to change 
 Resize the game window wider or taller to reveal additional scenery and NPCs.
 Field menus follow the expanded edges. Battles and unsupported screens stay centered.
 Distant NPCs use idle poses; their AI and interaction ranges retain native behavior.
-The feature is optional and starts disabled in a fresh extraction.
+Fresh installations enable Fit to screen. Existing saved mod choices are retained.
+
+For a launcher or controller problem, run ``CaptureDiagnostics.cmd`` and close
+the launcher normally. It writes ``launcher-diagnostics.log`` and
+``controller-input.jsonl`` beside the game; no ROM is needed for controller capture.
 
 See the GitHub release notes for what changed in v$Version.
 "@ | Out-File (Join-Path $stage 'README.md') -Encoding utf8
