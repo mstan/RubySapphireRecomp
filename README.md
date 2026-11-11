@@ -83,8 +83,9 @@ The runtime **refuses to launch on an unrecognized ROM** — the SHA-1 must matc
 
 ## Controls
 
-Both games support Emerald-style adaptive overworld rendering. In **Mods**,
-enable **Adaptive Overworld**, choose **Fit to screen**, and apply. Resizing
+Both games support Emerald-style adaptive overworld rendering. Fresh installs
+enable **Adaptive Overworld** with **Fit to screen**. Existing saved choices
+are preserved; change them in **Mods**. Resizing
 reveals more scenery and NPCs horizontally or vertically at the original
 pixel scale. Field menus follow the viewport edges; battles and full-screen
 interfaces stay centered. Distant NPCs use idle poses with native AI and
@@ -142,17 +143,18 @@ never committed.
 **3. Recompile + build.** The committed `variants/*/symbols/*.toml` are the
 importer output, so you can regenerate the C and build directly:
 
-```
+```powershell
 # from PowerShell, mingw64 on PATH
-gba_recompile --rom variants/ruby/roms/ruby_usa.gba \
-              --config variants/ruby/symbols/ruby_usa.toml \
-              --out variants/ruby/generated
+gba_recompile --rom variants/ruby/roms/ruby_usa.gba --config variants/ruby/game.toml --config variants/ruby/symbols/AXVE_symbols.toml --symbols variants/ruby/symbols/imported_symbols.tsv --data-symbols variants/ruby/symbols/imported_data_symbols.tsv --codegen-shards 64 --out variants/ruby/generated
 cmake -S . -B build -G Ninja
 cmake --build build --target RubyRecomp
 ```
 
 (`gba_recompile` is built from the `gbarecomp` checkout; see that repo's README.)
-The recompiled translation unit is large — expect a multi-minute compile.
+For Sapphire, replace `ruby` with `sapphire`, `AXVE` with `AXPE`, and build
+`SapphireRecomp`. Pass the imported function seeds explicitly; the overlay
+supplies code-copy and data-range metadata, but does not load that TSV.
+The generated code uses bounded shards; expect a multi-minute compile.
 
 ## License
 

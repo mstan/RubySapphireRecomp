@@ -175,7 +175,7 @@ add_gba_variant(RubyRecomp     ruby     19872 "RubyRecomp"
 add_gba_variant(SapphireRecomp sapphire 19882 "SapphireRecomp"
     "Pokemon Sapphire (USA)" "4722efb8cd45772ca32555b98fd3b9719f8e60a9" 0xBAFEDAE5)
 
-# Ship the game-owned, disabled-by-default mod catalog beside both executables.
+# Ship the game-owned mod catalog beside both executables.
 set(RS_PRELOADED_MODS "${CMAKE_CURRENT_SOURCE_DIR}/mods/preloaded")
 if(EXISTS "${RS_PRELOADED_MODS}/packages")
     foreach(RS_TARGET RubyRecomp SapphireRecomp)

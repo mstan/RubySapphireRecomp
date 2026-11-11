@@ -173,7 +173,8 @@ The ROM and BIOS are **never** redistributed - supply your own dumps.
 
 ## Adaptive Overworld
 
-Open **Mods**, enable **Adaptive Overworld**, choose **Fit to screen**, and apply.
+**Adaptive Overworld** starts enabled with **Fit to screen** on fresh installs.
+Existing saved aspect and feature choices are preserved. Use **Mods** to change them.
 Resize the game window wider or taller to reveal additional scenery and NPCs.
 Field menus follow the expanded edges. Battles and unsupported screens stay centered.
 Distant NPCs use idle poses; their AI and interaction ranges retain native behavior.
