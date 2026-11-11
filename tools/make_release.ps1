@@ -91,6 +91,7 @@ if (-not $SkipBuild) {
       "-DGBARECOMP_RUNTIME_UI_ROOT=$ui" `
       "-DGBARECOMP_GENERATED_BIOS_DIR=$generatedBiosPath" `
       -DGBARECOMP_BUILD_ORACLE=OFF `
+      -DGBARECOMP_NETPLAY=ON `
       -DGBARECOMP_MINGW_PREFIX_UNIX="/c/msys64/mingw64" `
       -DSDL2_INCLUDE_DIR="C:/msys64/mingw64/include/SDL2" `
       -DSDL2_LIBRARY="C:/msys64/mingw64/lib/libSDL2.dll.a"
