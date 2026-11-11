@@ -21,7 +21,7 @@ id = "widescreen"
 name = "Adaptive Overworld"
 description = "Expand the overworld in landscape or portrait, with anchored menus and continuous door animations. Battles and unsupported screens stay centered."
 group = "Presentation"
-default_enabled = false
+default_enabled = true
 
 [[option]]
 feature = "widescreen"

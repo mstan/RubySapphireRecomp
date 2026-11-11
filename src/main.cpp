@@ -92,6 +92,7 @@ int main(int argc, char** argv) {
     // a sibling game.toml. The asset picker still validates against these
     // values; CLI / TOML can override.
     gbarecomp::RunOptions opts;
+    opts.launcher_native_save_bytes = 128u * 1024u;
     opts.builtin_game_name = GBARECOMP_BUILTIN_NAME;
     opts.builtin_rom_sha1  = (sizeof(GBARECOMP_BUILTIN_SHA1) > 1)
                                  ? GBARECOMP_BUILTIN_SHA1
