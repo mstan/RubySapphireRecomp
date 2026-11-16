@@ -1,0 +1,32 @@
+{
+    "$schema": "https://recomplauncher.com/schema/recomplauncher.json",
+    "format": 1,
+    "name": "Pokémon Ruby (Recompiled)",
+    "game": {
+        "kind": "iso",
+        "label": "Your Pokémon Ruby ROM (.gba), USA release, rev 1 (SHA-1 610b96a9c9a7d03d2bafb655e7560ccff1a6d894).",
+        "check": {
+            "ids": [
+                "AXVE"
+            ]
+        },
+        "dumps": [
+            {
+                "name": "USA rev 1",
+                "crc32": "61641576"
+            }
+        ]
+    },
+    "start": {
+        "program": [
+            "RubyRecomp.exe"
+        ],
+        "args": [
+            "--rom",
+            "{game}"
+        ]
+    },
+    "requires": [
+        "start"
+    ]
+}
