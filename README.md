@@ -191,3 +191,10 @@ effort.
 <p align="center">
   <a href="https://discord.gg/Ad9BwSzctP"><img src=".github/raid-discord.png" alt="Join the Retro AI Development (R.A.I.D.) Discord" width="200"></a>
 </p>
+
+## RecompLauncher
+
+The manifest describes Pokémon Ruby USA rev 1 and ships only in the Ruby
+archive. Use the separate Sapphire archive for Sapphire. RecompLauncher passes
+your selected ROM through `--rom`; choose your own GBA BIOS in the game setup
+on first launch.
