@@ -1,5 +1,7 @@
 # RubySapphireRecomp — Pokémon Ruby + Sapphire, Recompiled
 
+<a href="https://recomplauncher.com/game/rubysapphirerecomp"><picture><source media="(prefers-color-scheme: dark)" srcset="https://recomplauncher.com/assets/press/launcher/badge-light.svg"><img alt="Get it on RecompLauncher" src="https://recomplauncher.com/assets/press/launcher/badge-dark.svg" height="48"></picture></a>
+
 > _This recompilation is a **byproduct of developing
 > [gbarecomp](https://github.com/mstan/gbarecomp)** — the games are the proving ground, the framework is the goal.
 > **These are in-development previews, not finished ports — expect rough
@@ -189,3 +191,10 @@ effort.
 <p align="center">
   <a href="https://discord.gg/Ad9BwSzctP"><img src=".github/raid-discord.png" alt="Join the Retro AI Development (R.A.I.D.) Discord" width="200"></a>
 </p>
+
+## RecompLauncher
+
+The manifest describes Pokémon Ruby USA rev 1 and ships only in the Ruby
+archive. Use the separate Sapphire archive for Sapphire. RecompLauncher passes
+your selected ROM through `--rom`; choose your own GBA BIOS in the game setup
+on first launch.
